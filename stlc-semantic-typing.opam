@@ -1,0 +1,14 @@
+opam-version: "2.0"
+maintainer: "skylee03"
+homepage: "https://github.com/skylee03/stlc-semantic-typing"
+dev-repo: "git+https://github.com/skylee03/stlc-semantic-typing.git"
+bug-reports: "https://github.com/skylee03/stlc-semantic-typing/issues"
+license: "MIT"
+authors: ["skylee03"]
+depends: [
+  "coq" {>= "9.0"}
+  "coq-autosubst"
+  "dune" {>= "3.17"}
+  "rocq-prover" {>= "9.0"}
+]
+synopsis: "STLC Semantic Typing"

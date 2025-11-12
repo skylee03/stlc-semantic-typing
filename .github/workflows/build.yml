@@ -1,0 +1,43 @@
+on:
+  push:
+    branches: [master]
+  pull_request:
+    branches: [master]
+  workflow_dispatch:
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/cache/restore@v4
+        with:
+          path: dune-cache
+          key: STLCSemanticTyping-${{ github.run_id }}-${{ github.run_number }}
+          restore-keys: |
+            STLCSemanticTyping-${{ github.run_id }}
+            STLCSemanticTyping
+      - uses: coq-community/docker-coq-action@v1
+        with:
+          coq_version: 9.1
+          ocaml_version: default
+          custom_script: |
+            sudo chown -R rocq:rocq .
+            opam --version
+            dune --version
+            rocq --version
+            opam repo add rocq-core-dev https://rocq-prover.org/opam/core-dev
+            opam repo add rocq-extra-dev https://rocq-prover.org/opam/extra-dev
+            opam update
+            opam install . --deps-only -y
+            export DUNE_CACHE_ROOT=$(pwd)/dune-cache/
+            dune build --cache=enabled
+      - if: always()
+        run: sudo chown -R 1001:116 .
+      - uses: actions/cache/save@v4
+        if: always()
+        with:
+          path: dune-cache
+          key: STLCSemanticTyping-${{ github.run_id }}-${{ github.run_number }}
+            
