@@ -1,0 +1,19 @@
+on:
+  push:
+    branches: [master]
+  pull_request:
+    branches: [master]
+  workflow_dispatch:
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: xu-cheng/latex-action@v4
+        with:
+          root_file: docs/rules.tex
+      - uses: JamesIves/github-pages-deploy-action@v4
+        with:
+            commit-message: ${{ github.event.head_commit.message }}
+            single-commit: yes
+            folder: docs
