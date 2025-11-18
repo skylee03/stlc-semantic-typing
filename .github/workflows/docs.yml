@@ -12,8 +12,12 @@ jobs:
       - uses: xu-cheng/latex-action@v4
         with:
           root_file: docs/rules.tex
+      - run: |
+          mkdir -p docs/build
+          mv rules.pdf docs/build/rules.pdf
       - uses: JamesIves/github-pages-deploy-action@v4
+        if: github.ref == 'refs/heads/master'
         with:
             commit-message: ${{ github.event.head_commit.message }}
             single-commit: yes
-            folder: docs
+            folder: docs/build
