@@ -12,7 +12,7 @@
         Types & $\tau$ & $\Coloneq$ & $\mathrm{bool} \mid \tau_1 \to \tau_2$\\
         Expressions & $e$ & $\Coloneq$ & $x \mid \bar{b} \mid \lambda x : \tau.~e \mid e_1~e_2$ \\
       Values & $v$ & $\Coloneq$ & $\bar{b} \mid \lambda x : \tau.~e$ \\
-        Contexts & $\Gamma$ & $\Coloneq$ & $\varnothing \mid (x : \tau) \dblcolon \Gamma$ \\
+        Contexts & $\Gamma$ & $\Coloneq$ & $\varnothing \mid \Gamma, x : \tau$ \\
         Substitutions & $\sigma$ & $\Coloneq$ & $\mathrm{id} \mid (v / x) \cdot \sigma$
       \end{tabular}
     \end{center}
@@ -23,7 +23,7 @@
     \begin{mathpar}
       \infer[\textsc{Typ-Var}]{\Gamma \ni x : \tau}{\Gamma \vdash x : \tau} \and
       \infer[\textsc{Typ-BLit}]{ }{\Gamma \vdash \bar{b} : \mathrm{bool}} \and
-      \infer[\textsc{Typ-Abs}]{(x : \tau_1) \dblcolon \Gamma \vdash e : \tau_2}{\Gamma \vdash \lambda x : \tau_1.~e : \tau_1 \to \tau_2} \and
+      \infer[\textsc{Typ-Abs}]{\Gamma, x : \tau_1 \vdash e : \tau_2}{\Gamma \vdash \lambda x : \tau_1.~e : \tau_1 \to \tau_2} \and
       \infer[\textsc{Typ-App}]{\Gamma \vdash e_1 : \tau_1 \to \tau_2 \and \Gamma \vdash e_2 : \tau_1}{\Gamma \vdash e_1~e_2 : \tau_2} \and
     \end{mathpar}
     \caption{Syntactic Typing}
@@ -44,7 +44,7 @@
       \mathscr{V}\lBrack\tau_1 \to \tau_2\rBrack &\coloneq \{\lambda x : \tau_1.~e \mid \forall v.~v \in \mathscr{V}\lBrack\tau_1\rBrack \to e[v / x] \in \mathscr{E}\lBrack\tau_2\rBrack\} \\
       \mathscr{E}\lBrack\tau\rBrack &\coloneq \{e \mid \exists v.~ e \hookrightarrow^* v \land v \in \mathscr{V}\lBrack\tau\rBrack\} \\
       \mathscr{G}\lBrack\varnothing\rBrack &\coloneq \{\mathrm{id}\} \\
-      \mathscr{G}\lBrack(x : \tau) \dblcolon \Gamma\rBrack &\coloneq \{(v / x) \cdot \sigma \mid \sigma \in \mathscr{G}\lBrack\Gamma\rBrack \land v \in \mathscr{V}\lBrack\tau\rBrack\} \\
+      \mathscr{G}\lBrack\Gamma, x : \tau\rBrack &\coloneq \{(v / x) \cdot \sigma \mid \sigma \in \mathscr{G}\lBrack\Gamma\rBrack \land v \in \mathscr{V}\lBrack\tau\rBrack\} \\
     \end{align*}
     \caption{Logical Relation}
   \end{figure}
