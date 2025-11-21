@@ -9,8 +9,8 @@
         Types & $\tau$ & $\Coloneq$ & $\mathrm{bool} \mid \tau \to \tau$\\
         Expressions & $e$ & $\Coloneq$ & $x \mid \bar{b} \mid \lambda x : \tau.~e \mid e~e$ \\
       Values & $v$ & $\Coloneq$ & $\bar{b} \mid \lambda x : \tau.~e$ \\
-        Contexts & $\Gamma$ & $\Coloneq$ & $\varnothing \mid \Gamma, x : \tau$ \\
-        Substitutions & $\sigma$ & $\Coloneq$ & $\mathrm{id} \mid \sigma[x \mapsto v]$
+        Contexts & $\Gamma$ & $\Coloneq$ & $\bullet \mid \Gamma, x : \tau$ \\
+        Substitutions & $\sigma$ & $\Coloneq$ & $\emptyset \mid \sigma[x \mapsto v]$
       \end{tabular}
     \end{center}
     \caption{Syntax}
@@ -37,7 +37,7 @@
 
   \begin{figure}[t]
     \begin{align*}
-      \mathrm{id}(e) &\coloneq e \\
+      \emptyset(e) &\coloneq e \\
       \sigma[x \mapsto v](e) &\coloneq \sigma(e[v/x])
     \end{align*}
     \caption{Substitution}
@@ -48,7 +48,7 @@
       \mathcal{V}\lBrack\mathrm{bool}\rBrack &\coloneq \{\bar{b} \mid b \in \mathbb{B}\} \\
       \mathcal{V}\lBrack\tau_1 \to \tau_2\rBrack &\coloneq \{\lambda x : \tau_1.~e \mid \forall v \in \mathcal{V}\lBrack\tau_1\rBrack.~e[v / x] \in \mathcal{E}\lBrack\tau_2\rBrack\} \\
       \mathcal{E}\lBrack\tau\rBrack &\coloneq \{e \mid \exists v.~ e \hookrightarrow^* v \land v \in \mathcal{V}\lBrack\tau\rBrack\} \\
-      \mathcal{G}\lBrack\varnothing\rBrack &\coloneq \{\mathrm{id}\} \\
+      \mathcal{G}\lBrack\bullet\rBrack &\coloneq \{\emptyset\} \\
       \mathcal{G}\lBrack\Gamma, x : \tau\rBrack &\coloneq \{\sigma[x \mapsto v] \mid \sigma \in \mathcal{G}\lBrack\Gamma\rBrack \land v \in \mathcal{V}\lBrack\tau\rBrack\} \\
     \end{align*}
     \caption{Logical Relation}
