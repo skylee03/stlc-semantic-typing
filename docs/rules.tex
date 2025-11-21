@@ -13,7 +13,7 @@
         Expressions & $e$ & $\Coloneq$ & $x \mid \bar{b} \mid \lambda x : \tau.~e \mid e_1~e_2$ \\
       Values & $v$ & $\Coloneq$ & $\bar{b} \mid \lambda x : \tau.~e$ \\
         Contexts & $\Gamma$ & $\Coloneq$ & $\varnothing \mid \Gamma, x : \tau$ \\
-        Substitutions & $\sigma$ & $\Coloneq$ & $\mathrm{id} \mid (v / x) \cdot \sigma$
+        Substitutions & $\sigma$ & $\Coloneq$ & $\mathrm{id} \mid \sigma[x \mapsto v]$
       \end{tabular}
     \end{center}
     \caption{Syntax}
@@ -44,7 +44,7 @@
       \mathscr{V}\lBrack\tau_1 \to \tau_2\rBrack &\coloneq \{\lambda x : \tau_1.~e \mid \forall v.~v \in \mathscr{V}\lBrack\tau_1\rBrack \to e[v / x] \in \mathscr{E}\lBrack\tau_2\rBrack\} \\
       \mathscr{E}\lBrack\tau\rBrack &\coloneq \{e \mid \exists v.~ e \hookrightarrow^* v \land v \in \mathscr{V}\lBrack\tau\rBrack\} \\
       \mathscr{G}\lBrack\varnothing\rBrack &\coloneq \{\mathrm{id}\} \\
-      \mathscr{G}\lBrack\Gamma, x : \tau\rBrack &\coloneq \{(v / x) \cdot \sigma \mid \sigma \in \mathscr{G}\lBrack\Gamma\rBrack \land v \in \mathscr{V}\lBrack\tau\rBrack\} \\
+      \mathscr{G}\lBrack\Gamma, x : \tau\rBrack &\coloneq \{\sigma[x \mapsto v] \mid \sigma \in \mathscr{G}\lBrack\Gamma\rBrack \land v \in \mathscr{V}\lBrack\tau\rBrack\} \\
     \end{align*}
     \caption{Logical Relation}
   \end{figure}
