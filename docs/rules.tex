@@ -41,7 +41,7 @@
   \begin{figure}[t]
     \begin{align*}
       \mathscr{V}\lBrack\mathrm{bool}\rBrack &\coloneq \{\bar{b} \mid b \in \mathbb{B}\} \\
-      \mathscr{V}\lBrack\tau_1 \to \tau_2\rBrack &\coloneq \{\lambda x : \tau_1.~e \mid \forall v.~v \in \mathscr{V}\lBrack\tau_1\rBrack \to e[v / x] \in \mathscr{E}\lBrack\tau_2\rBrack\} \\
+      \mathscr{V}\lBrack\tau_1 \to \tau_2\rBrack &\coloneq \{\lambda x : \tau_1.~e \mid \forall v.~v \in \mathscr{V}\lBrack\tau_1\rBrack \implies e[v / x] \in \mathscr{E}\lBrack\tau_2\rBrack\} \\
       \mathscr{E}\lBrack\tau\rBrack &\coloneq \{e \mid \exists v.~ e \hookrightarrow^* v \land v \in \mathscr{V}\lBrack\tau\rBrack\} \\
       \mathscr{G}\lBrack\varnothing\rBrack &\coloneq \{\mathrm{id}\} \\
       \mathscr{G}\lBrack\Gamma, x : \tau\rBrack &\coloneq \{\sigma[x \mapsto v] \mid \sigma \in \mathscr{G}\lBrack\Gamma\rBrack \land v \in \mathscr{V}\lBrack\tau\rBrack\} \\
@@ -51,7 +51,7 @@
 
   \begin{figure}[t]
     \[
-      \Gamma \vDash e : \tau \coloneq \forall \sigma.~\sigma \in \mathscr{G}\lBrack\Gamma\rBrack \to e[\sigma] \in \mathscr{E}\lBrack\tau\rBrack
+      \Gamma \vDash e : \tau \coloneq \forall \sigma.~\sigma \in \mathscr{G}\lBrack\Gamma\rBrack \implies e[\sigma] \in \mathscr{E}\lBrack\tau\rBrack
     \]
     \caption{Semantic Typing}
   \end{figure}
