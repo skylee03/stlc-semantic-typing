@@ -9,8 +9,8 @@
   \begin{figure}[t]
     \begin{center}
       \begin{tabular}{llll}
-        Types & $\tau$ & $\Coloneq$ & $\mathrm{bool} \mid \tau_1 \to \tau_2$\\
-        Expressions & $e$ & $\Coloneq$ & $x \mid \bar{b} \mid \lambda x : \tau.~e \mid e_1~e_2$ \\
+        Types & $\tau$ & $\Coloneq$ & $\mathrm{bool} \mid \tau \to \tau$\\
+        Expressions & $e$ & $\Coloneq$ & $x \mid \bar{b} \mid \lambda x : \tau.~e \mid e~e$ \\
       Values & $v$ & $\Coloneq$ & $\bar{b} \mid \lambda x : \tau.~e$ \\
         Contexts & $\Gamma$ & $\Coloneq$ & $\varnothing \mid \Gamma, x : \tau$ \\
         Substitutions & $\sigma$ & $\Coloneq$ & $\mathrm{id} \mid \sigma[x \mapsto v]$
