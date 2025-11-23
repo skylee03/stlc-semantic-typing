@@ -20,9 +20,13 @@ jobs:
           name: rules.pdf
           path: docs/build/rules.pdf
           retention-days: 30
+      - uses: rossjrw/pr-preview-action@v1
+        with:
+          source-dir: docs/build
       - uses: JamesIves/github-pages-deploy-action@v4
         if: github.ref == 'refs/heads/master'
         with:
+            clean-exclude: pr-preview
             commit-message: ${{ github.event.head_commit.message }}
             single-commit: yes
             folder: docs/build
