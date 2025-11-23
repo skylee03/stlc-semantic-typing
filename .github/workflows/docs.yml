@@ -15,6 +15,11 @@ jobs:
       - run: |
           mkdir -p docs/build
           mv rules.pdf docs/build/rules.pdf
+      - uses: actions/upload-artifact@v4
+        with:
+          name: rules.pdf
+          path: docs/build/rules.pdf
+          retention-days: 30
       - uses: JamesIves/github-pages-deploy-action@v4
         if: github.ref == 'refs/heads/master'
         with:
