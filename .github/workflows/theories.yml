@@ -1,8 +1,14 @@
 on:
   push:
     branches: [master]
+    paths-ignore:
+      - 'docs/**'
+      - '.github/workflows/docs.yml'
   pull_request:
     branches: [master]
+    paths-ignore:
+      - 'docs/**'
+      - '.github/workflows/docs.yml'
   workflow_dispatch:
 jobs:
   build:
