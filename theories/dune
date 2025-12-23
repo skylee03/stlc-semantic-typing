@@ -1,4 +1,4 @@
 (coq.theory
  (name STLCSemanticTyping)
  (package stlc-semantic-typing)
- (theories Stdlib Autosubst))
+ (theories Stdlib Autosubst stdpp))

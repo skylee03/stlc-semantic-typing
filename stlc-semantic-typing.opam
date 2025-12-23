@@ -10,5 +10,6 @@ depends: [
   "coq-autosubst"
   "dune" {>= "3.17"}
   "rocq-prover" {>= "9.0"}
+  "rocq-stdpp"
 ]
 synopsis: "STLC Semantic Typing"

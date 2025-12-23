@@ -1,8 +1,9 @@
 From Stdlib Require Import Utf8.
 From Stdlib Require Import List.
 From Autosubst Require Import Autosubst.
+From stdpp Require Import relations.
 
-(* STLC *)
+(* relations *)
 
 Inductive typ :=
 | Bool : typ
@@ -50,45 +51,23 @@ Hint Constructors typ exp val : core.
 (* Operational Semantics *)
 
 Reserved Infix "↪" (at level 70).
-Inductive red : exp → exp → Prop :=
-| RedBeta : ∀ τ e v,
+Inductive step : exp → exp → Prop :=
+| StepBeta : ∀ τ e v,
     val v →
     (App (Abs τ e) v) ↪ e.[v/]
-| RedApp₁ : ∀ e₁ e₁' e₂,
+| StepApp₁ : ∀ e₁ e₁' e₂,
     e₁ ↪ e₁' →
     App e₁ e₂ ↪ App e₁' e₂
-| RedApp₂ : ∀ e₁ e₂ e₂',
+| StepApp₂ : ∀ e₁ e₂ e₂',
     val e₁ →
     e₂ ↪ e₂' →
     App e₁ e₂ ↪ App e₁ e₂'
-where "e ↪ e'" := (red e e').
+where "e ↪ e'" := (step e e').
 
-Reserved Infix "↪*" (at level 70).
-Inductive mred : exp → exp → Prop :=
-| MRedBase : ∀ e, e ↪* e
-| MRedStep : ∀ e e' e'',
-    e ↪ e' →
-    e' ↪* e'' →
-    e ↪* e''
-where "e ↪* e'" := (mred e e').
+Infix "↪*" := (rtc step) (at level 70).
 
 #[export]
-Hint Constructors red mred : core.
-
-Lemma mred_refl : ∀ e,
-  e ↪* e.
-Proof.
-  auto.
-Qed.
-
-Lemma mred_trans : ∀ e e' e'',
-  e ↪* e' →
-  e' ↪* e'' →
-  e ↪* e''.
-Proof with eauto.
-  intros.
-  induction H...
-Qed.
+Hint Constructors step rtc : core.
 
 (* Syntactic Typing *)
 
@@ -170,7 +149,7 @@ Notation "Γ ⊨ e : τ" := (sem_typing Γ e τ) (at level 65, e at next level).
 Lemma ctx_rel_lookup_msubst_val_rel : ∀ Γ σ x τ,
   σ ∈ 𝒢⟦Γ⟧ →
   Γ ∋ x : τ →
-  (σ x) ∈ 𝒱⟦τ⟧.
+  σ x ∈ 𝒱⟦τ⟧.
 Proof with eauto.
   intros.
   generalize dependent x.
@@ -219,11 +198,11 @@ Proof with eauto.
   specialize H with (v .: σ).
   enough (e.[v .: σ] ∈ ℰ⟦τ₂⟧)...
   unfold exp_rel in H2.
-  destruct H2 as [v0 [Hred_v0 Hvrel_v0]].
+  destruct H2 as [v0 [Hstep_v0 Hvrel_v0]].
   exists v0.
   split...
-  apply MRedStep with (e' := e.[up σ].[v/]).
-  - apply RedBeta.
+  apply rtc_l with (y := e.[up σ].[v/]).
+  - apply StepBeta.
     eapply val_rel_val...
   - asimpl...
 Qed.
@@ -242,13 +221,13 @@ Proof with eauto.
   destruct H0 as [v2 [Hmsubst_v2 Hvrel_v2]].
   destruct Hvrel_v1 as [Haval_v1 Happ_v1].
   specialize (Happ_v1 v2 Hvrel_v2).
-  destruct Happ_v1 as [v [Hmred_v Hvrel_v]].
+  destruct Happ_v1 as [v [Hmstep_v Hvrel_v]].
   exists v.
   split...
   inversion Haval_v1; subst.
   simpl.
-  apply mred_trans with (e' := App (Abs τ e) v2)...
-  apply mred_trans with (e' := App (Abs τ e) e₂.[σ])...
+  apply rtc_trans with (y := App (Abs τ e) v2)...
+  apply rtc_trans with (y := App (Abs τ e) e₂.[σ])...
   - induction Hmsubst_v1...
   - induction Hmsubst_v2...
 Qed.
