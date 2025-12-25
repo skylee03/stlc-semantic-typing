@@ -1,9 +1,8 @@
-From Stdlib Require Import Utf8.
-From Stdlib Require Import List.
+From Stdlib Require Import List Utf8.
 From Autosubst Require Import Autosubst.
-From stdpp Require Import relations.
+From stdpp Require Import relations (rtc(..), rtc_trans).
 
-(* relations *)
+(* STLC *)
 
 Inductive typ :=
 | Bool : typ
@@ -149,7 +148,7 @@ Notation "Γ ⊨ e : τ" := (sem_typing Γ e τ) (at level 65, e at next level).
 Lemma ctx_rel_lookup_msubst_val_rel : ∀ Γ σ x τ,
   σ ∈ 𝒢⟦Γ⟧ →
   Γ ∋ x : τ →
-  σ x ∈ 𝒱⟦τ⟧.
+  (σ x) ∈ 𝒱⟦τ⟧.
 Proof with eauto.
   intros.
   generalize dependent x.
