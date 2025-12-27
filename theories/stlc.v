@@ -1,5 +1,6 @@
 From Stdlib Require Import List Utf8.
 From Autosubst Require Import Autosubst.
+From Equations Require Import Equations.
 From stdpp Require Import relations (rtc(..), rtc_trans).
 
 (* STLC *)
@@ -110,15 +111,12 @@ Inductive abs_val : exp → Prop :=
 Hint Constructors blit_val abs_val : core.
 
 Reserved Notation "e ∈ 𝒱⟦ τ ⟧".
-Fixpoint val_rel e τ : Prop :=
-  match τ with
-  | Bool => blit_val e
-  | Arr τ₁ τ₂ => abs_val e ∧ ∀ v,
-      v ∈ 𝒱⟦τ₁⟧ →
-      (∃ v',
-        App e v ↪* v' ∧ v' ∈ 𝒱⟦τ₂⟧)
-  end
-where "e ∈ 𝒱⟦ τ ⟧" := (val_rel e τ).
+Equations val_rel e (τ : typ) : Prop := {
+| e, Bool := blit_val e;
+| e, (Arr τ₁ τ₂) := abs_val e ∧ ∀ v,
+    v ∈ 𝒱⟦τ₁⟧ →
+    (∃ v', App e v ↪* v' ∧ v' ∈ 𝒱⟦τ₂⟧)
+} where "e ∈ 𝒱⟦ τ ⟧" := (val_rel e τ).
 
 Reserved Notation "σ ∈ 𝒢⟦ Γ ⟧".
 Inductive ctx_rel : (var → exp) → ctx → Prop :=
@@ -175,6 +173,7 @@ Proof with auto.
   intros.
   exists b.
   split; simpl...
+  simp val_rel...
 Qed.
 
 Lemma val_rel_val : ∀ τ v,
