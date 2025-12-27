@@ -1,38 +1,35 @@
-From Stdlib Require Import Utf8.
-From Stdlib Require Import List.
+From Stdlib Require Import List Utf8.
 From Autosubst Require Import Autosubst.
+From Equations Require Import Equations.
+From stdpp Require Import relations (rtc(..), rtc_trans).
 
 (* STLC *)
 
 Inductive typ :=
-| typ_bool : typ
-| typ_arr : typ → typ → typ.
+| Bool : typ
+| Arr : typ → typ → typ.
 
 Declare Scope typ_scope.
 Delimit Scope typ_scope with typ.
 Bind Scope typ_scope with typ.
-Notation "'𝔹'" := typ_bool : typ_scope.
-Infix "→" := typ_arr : typ_scope.
 
 Inductive exp :=
-| exp_var : var → exp
-| exp_blit : bool → exp
-| exp_abs : typ → {bind exp} → exp
-| exp_app : exp → exp → exp.
+| Var : var → exp
+| BLit : bool → exp
+| Abs : typ → {bind exp} → exp
+| App : exp → exp → exp.
 
 Declare Scope exp_scope.
 Delimit Scope exp_scope with exp.
 Bind Scope exp_scope with exp.
-Notation "'ƛ' τ , e" := (exp_abs τ e) (at level 71) : exp_scope.
-Notation "e₁ [ e₂ ]" := (exp_app e₁ e₂) (at level 68, left associativity) : exp_scope.
 
 #[export] Instance Ids_exp : Ids exp. derive. Defined.
 #[export] Instance Rename_exp : Rename exp. derive. Defined.
 #[export] Instance Subst_exp : Subst exp. derive. Defined.
 #[export] Instance SubstLemmas_exp : SubstLemmas exp. derive. Qed.
 
-Coercion exp_var : var >-> exp.
-Coercion exp_blit : bool >-> exp.
+Coercion Var : var >-> exp.
+Coercion BLit : bool >-> exp.
 
 Definition ctx := list typ.
 Notation "∅" := nil.
@@ -45,8 +42,8 @@ Implicit Types
   (σ : var → exp).
 
 Inductive val : exp → Prop :=
-| val_bool : ∀ b, val b
-| val_arr : ∀ τ e, val (ƛ τ, e).
+| ValBool : ∀ b, val b
+| ValArr : ∀ τ e, val (Abs τ e).
 
 #[export]
 Hint Constructors typ exp val : core.
@@ -54,71 +51,49 @@ Hint Constructors typ exp val : core.
 (* Operational Semantics *)
 
 Reserved Infix "↪" (at level 70).
-Inductive red : exp → exp → Prop :=
-| red_beta : ∀ τ e v,
+Inductive step : exp → exp → Prop :=
+| StepBeta : ∀ τ e v,
     val v →
-    (ƛ τ, e) [v] ↪ e.[v/]
-| red_app₁ : ∀ e₁ e₁' e₂,
+    (App (Abs τ e) v) ↪ e.[v/]
+| StepApp₁ : ∀ e₁ e₁' e₂,
     e₁ ↪ e₁' →
-    e₁ [e₂] ↪ e₁' [e₂]
-| red_app₂ : ∀ e₁ e₂ e₂',
+    App e₁ e₂ ↪ App e₁' e₂
+| StepApp₂ : ∀ e₁ e₂ e₂',
     val e₁ →
     e₂ ↪ e₂' →
-    e₁ [e₂] ↪ e₁ [e₂']
-where "e ↪ e'" := (red e e').
+    App e₁ e₂ ↪ App e₁ e₂'
+where "e ↪ e'" := (step e e').
 
-Reserved Infix "↪*" (at level 70).
-Inductive mred : exp → exp → Prop :=
-| mred_base : ∀ e, e ↪* e
-| mred_step : ∀ e e' e'',
-    e ↪ e' →
-    e' ↪* e'' →
-    e ↪* e''
-where "e ↪* e'" := (mred e e').
+Infix "↪*" := (rtc step) (at level 70).
 
 #[export]
-Hint Constructors red mred : core.
-
-Lemma mred_refl : ∀ e,
-  e ↪* e.
-Proof.
-  auto.
-Qed.
-
-Lemma mred_trans : ∀ e e' e'',
-  e ↪* e' →
-  e' ↪* e'' →
-  e ↪* e''.
-Proof with eauto.
-  intros.
-  induction H...
-Qed.
+Hint Constructors step rtc : core.
 
 (* Syntactic Typing *)
 
 Reserved Notation "Γ ∋ x : τ" (at level 65, x at next level).
 Inductive lookup : ctx → var → typ → Prop :=
-| lookup_zero : ∀ τ Γ,
+| LookupZero : ∀ τ Γ,
     τ :: Γ ∋ 0 : τ
-| lookup_succ : ∀ Γ τ₁ x τ₂,
+| LookupSucc : ∀ Γ τ₁ x τ₂,
     Γ ∋ x : τ₂ →
     τ₁ :: Γ ∋ S x : τ₂
 where "Γ ∋ x : τ" := (lookup Γ x τ).
 
 Reserved Notation "Γ ⊢ e : τ" (at level 65, e at next level).
 Inductive typing : ctx → exp → typ → Prop :=
-| typing_var : ∀ Γ x τ,
+| TypingVar : ∀ Γ x τ,
     Γ ∋ x : τ →
     Γ ⊢ x : τ
-| typing_blit : ∀ Γ b,
-    Γ ⊢ b : 𝔹
-| typing_abs : ∀ Γ τ₁ e τ₂,
+| TypingBLit : ∀ Γ b,
+    Γ ⊢ b : Bool
+| TypingAbs : ∀ Γ τ₁ e τ₂,
     τ₁ :: Γ ⊢ e : τ₂ →
-    Γ ⊢ (ƛ τ₁, e) : (τ₁ → τ₂)
-| typing_app : ∀ Γ τ₁ τ₂ e₁ e₂,
-    Γ ⊢ e₁ : (τ₁ → τ₂) →
+    Γ ⊢ Abs τ₁ e : Arr τ₁ τ₂
+| TypingApp : ∀ Γ τ₁ τ₂ e₁ e₂,
+    Γ ⊢ e₁ : Arr τ₁ τ₂ →
     Γ ⊢ e₂ : τ₁ →
-    Γ ⊢ (e₁ [e₂]) : τ₂
+    Γ ⊢ App e₁ e₂ : τ₂
 where "Γ ⊢ e : τ" := (typing Γ e τ).
 
 #[export]
@@ -127,29 +102,26 @@ Hint Constructors lookup typing : core.
 (* Semantic Typing *)
 
 Inductive blit_val : exp → Prop :=
-| blit_val_blit : ∀ b, blit_val b.
+| BLitValBLit : ∀ b, blit_val b.
 
 Inductive abs_val : exp → Prop :=
-| abs_val_abs : ∀ τ e, abs_val (ƛ τ, e).
+| AbsValAbs : ∀ τ e, abs_val (Abs τ e).
 
 #[export]
 Hint Constructors blit_val abs_val : core.
 
 Reserved Notation "e ∈ 𝒱⟦ τ ⟧".
-Fixpoint val_rel e τ : Prop :=
-  match τ with
-  | typ_bool => blit_val e
-  | typ_arr τ₁ τ₂ => abs_val e ∧ ∀ v,
-      v ∈ 𝒱⟦τ₁⟧ →
-      (∃ v',
-        (e [v]) ↪* v' ∧ v' ∈ 𝒱⟦τ₂⟧)
-  end
-where "e ∈ 𝒱⟦ τ ⟧" := (val_rel e τ).
+Equations val_rel e (τ : typ) : Prop := {
+| e, Bool := blit_val e;
+| e, (Arr τ₁ τ₂) := abs_val e ∧ ∀ v,
+    v ∈ 𝒱⟦τ₁⟧ →
+    (∃ v', App e v ↪* v' ∧ v' ∈ 𝒱⟦τ₂⟧)
+} where "e ∈ 𝒱⟦ τ ⟧" := (val_rel e τ).
 
 Reserved Notation "σ ∈ 𝒢⟦ Γ ⟧".
 Inductive ctx_rel : (var → exp) → ctx → Prop :=
-| ctx_rel_nil : ids ∈ 𝒢⟦∅⟧
-| ctx_rel_cons : ∀ Γ σ τ v,
+| CtxRelNil : ids ∈ 𝒢⟦∅⟧
+| CtxRelCons : ∀ Γ σ τ v,
     σ ∈ 𝒢⟦Γ⟧ →
     v ∈ 𝒱⟦τ⟧ →
     (v .: σ) ∈ 𝒢⟦τ :: Γ⟧
@@ -196,11 +168,12 @@ Proof with eauto.
 Qed.
 
 Lemma fundamental_property_blit : ∀ Γ b,
-  Γ ⊨ b : 𝔹.
+  Γ ⊨ b : Bool.
 Proof with auto.
   intros.
   exists b.
   split; simpl...
+  simp val_rel...
 Qed.
 
 Lemma val_rel_val : ∀ τ v,
@@ -213,29 +186,29 @@ Qed.
 
 Lemma fundamental_property_abs : ∀ Γ τ₁ e τ₂,
   τ₁ :: Γ ⊨ e : τ₂ →
-  Γ ⊨ (ƛ τ₁, e) : (τ₁ → τ₂).
+  Γ ⊨ Abs τ₁ e : Arr τ₁ τ₂.
 Proof with eauto.
   unfold sem_typing.
   intros.
-  exists ((ƛ τ₁, e)%exp.[σ]).
+  exists ((Abs τ₁ e).[σ]).
   repeat split...
   intros.
   specialize H with (v .: σ).
   enough (e.[v .: σ] ∈ ℰ⟦τ₂⟧)...
   unfold exp_rel in H2.
-  destruct H2 as [v0 [Hred_v0 Hvrel_v0]].
+  destruct H2 as [v0 [Hstep_v0 Hvrel_v0]].
   exists v0.
   split...
-  apply mred_step with (e' := e.[up σ].[v/]).
-  - apply red_beta.
+  apply rtc_l with (y := e.[up σ].[v/]).
+  - apply StepBeta.
     eapply val_rel_val...
   - asimpl...
 Qed.
 
 Lemma fundamental_property_app : ∀ Γ τ₁ τ₂ e₁ e₂,
-  Γ ⊨ e₁ : (τ₁ → τ₂) →
+  Γ ⊨ e₁ : Arr τ₁ τ₂ →
   Γ ⊨ e₂ : τ₁ →
-  Γ ⊨ (e₁ [e₂]) : τ₂.
+  Γ ⊨ App e₁ e₂ : τ₂.
 Proof with eauto.
   unfold sem_typing.
   unfold exp_rel.
@@ -246,13 +219,13 @@ Proof with eauto.
   destruct H0 as [v2 [Hmsubst_v2 Hvrel_v2]].
   destruct Hvrel_v1 as [Haval_v1 Happ_v1].
   specialize (Happ_v1 v2 Hvrel_v2).
-  destruct Happ_v1 as [v [Hmred_v Hvrel_v]].
+  destruct Happ_v1 as [v [Hmstep_v Hvrel_v]].
   exists v.
   split...
   inversion Haval_v1; subst.
   simpl.
-  apply mred_trans with (e' := ((ƛ τ, e) [v2])%exp)...
-  apply mred_trans with (e' := ((ƛ τ, e) [e₂.[σ]])%exp)...
+  apply rtc_trans with (y := App (Abs τ e) v2)...
+  apply rtc_trans with (y := App (Abs τ e) e₂.[σ])...
   - induction Hmsubst_v1...
   - induction Hmsubst_v2...
 Qed.
