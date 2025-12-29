@@ -2,6 +2,7 @@ From Stdlib Require Import List Utf8.
 From Autosubst Require Import Autosubst.
 From Equations Require Import Equations.
 From stdpp Require Import relations (rtc(..), rtc_trans).
+From Hammer Require Import Tactics.
 
 (* STLC *)
 
@@ -147,13 +148,11 @@ Lemma ctx_rel_lookup_msubst_val_rel : ∀ Γ σ x τ,
   σ ∈ 𝒢⟦Γ⟧ →
   Γ ∋ x : τ →
   (σ x) ∈ 𝒱⟦τ⟧.
-Proof with eauto.
+Proof.
   intros.
   generalize dependent x.
   generalize dependent τ.
-  induction H; intros.
-  - inversion H0.
-  - inversion H1; subst...
+  induction H; sauto lq: on.
 Qed.
 
 Lemma fundamental_property_var : ∀ Γ x τ,
@@ -169,19 +168,15 @@ Qed.
 
 Lemma fundamental_property_blit : ∀ Γ b,
   Γ ⊨ b : Bool.
-Proof with auto.
-  intros.
-  exists b.
-  split; simpl...
-  simp val_rel...
+Proof.
+  hauto l: on.
 Qed.
 
 Lemma val_rel_val : ∀ τ v,
   v ∈ 𝒱⟦τ⟧ →
   val v.
-Proof with eauto.
-  induction τ; intros; destruct H; subst...
-  inversion H...
+Proof.
+  induction τ; sauto q: on.
 Qed.
 
 Lemma fundamental_property_abs : ∀ Γ τ₁ e τ₂,
