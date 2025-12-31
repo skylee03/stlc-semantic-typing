@@ -11,28 +11,22 @@ Unset Printing Implicit Defensive.
 
 (* STLC *)
 
-Inductive typ :=
-| Bool : typ
-| Arr : typ → typ → typ.
+Implicit Types
+  (x : var)
+  (b : bool).
 
-Declare Scope typ_scope.
-Delimit Scope typ_scope with typ.
-Bind Scope typ_scope with typ.
+Inductive typ :=
+| Bool
+| Arr (τ₁ τ₂ : typ).
+
+Implicit Types
+  (τ :typ).
 
 Inductive exp :=
-| Var : var → exp
-| BLit : bool → exp
-| Abs : typ → {bind exp} → exp
-| App : exp → exp → exp.
-
-Declare Scope exp_scope.
-Delimit Scope exp_scope with exp.
-Bind Scope exp_scope with exp.
-
-#[export] Instance Ids_exp : Ids exp. derive. Defined.
-#[export] Instance Rename_exp : Rename exp. derive. Defined.
-#[export] Instance Subst_exp : Subst exp. derive. Defined.
-#[export] Instance SubstLemmas_exp : SubstLemmas exp. derive. Qed.
+| Var x
+| BLit b
+| Abs τ (e : {bind exp})
+| App (e₁ e₂ : exp).
 
 Coercion Var : var >-> exp.
 Coercion BLit : bool >-> exp.
@@ -41,10 +35,7 @@ Definition ctx := list typ.
 Notation "∅" := nil.
 
 Implicit Types
-  (τ : typ)
   (e v : exp)
-  (x : var)
-  (b : bool)
   (Γ : ctx)
   (σ : var → exp).
 
@@ -55,17 +46,24 @@ Inductive val : exp → Prop :=
 #[export]
 Hint Constructors typ exp val : core.
 
+(* Autosubst *)
+
+#[export] Instance Ids_exp : Ids exp. derive. Defined.
+#[export] Instance Rename_exp : Rename exp. derive. Defined.
+#[export] Instance Subst_exp : Subst exp. derive. Defined.
+#[export] Instance SubstLemmas_exp : SubstLemmas exp. derive. Qed.
+
 (* Operational Semantics *)
 
 Reserved Infix "↪" (at level 70).
 Inductive step : exp → exp → Prop :=
-| StepBeta : ∀ τ e v,
+| StepBeta τ e v :
     val v →
     (App (Abs τ e) v) ↪ e.[v/]
-| StepApp₁ : ∀ e₁ e₁' e₂,
+| StepApp₁ e₁ e₁' e₂ :
     e₁ ↪ e₁' →
     App e₁ e₂ ↪ App e₁' e₂
-| StepApp₂ : ∀ e₁ e₂ e₂',
+| StepApp₂ e₁ e₂ e₂' :
     val e₁ →
     e₂ ↪ e₂' →
     App e₁ e₂ ↪ App e₁ e₂'
@@ -80,24 +78,24 @@ Hint Constructors step rtc : core.
 
 Reserved Notation "Γ ∋ x : τ" (at level 65, x at next level).
 Inductive lookup : ctx → var → typ → Prop :=
-| LookupZero : ∀ τ Γ,
+| LookupZero τ Γ :
     τ :: Γ ∋ 0 : τ
-| LookupSucc : ∀ Γ τ₁ x τ₂,
+| LookupSucc Γ τ₁ x τ₂ :
     Γ ∋ x : τ₂ →
     τ₁ :: Γ ∋ S x : τ₂
 where "Γ ∋ x : τ" := (lookup Γ x τ).
 
 Reserved Notation "Γ ⊢ e : τ" (at level 65, e at next level).
 Inductive typing : ctx → exp → typ → Prop :=
-| TypingVar : ∀ Γ x τ,
+| TypingVar Γ x τ :
     Γ ∋ x : τ →
     Γ ⊢ x : τ
-| TypingBLit : ∀ Γ b,
+| TypingBLit Γ b :
     Γ ⊢ b : Bool
-| TypingAbs : ∀ Γ τ₁ e τ₂,
+| TypingAbs Γ τ₁ e τ₂ :
     τ₁ :: Γ ⊢ e : τ₂ →
     Γ ⊢ Abs τ₁ e : Arr τ₁ τ₂
-| TypingApp : ∀ Γ τ₁ τ₂ e₁ e₂,
+| TypingApp Γ τ₁ τ₂ e₁ e₂ :
     Γ ⊢ e₁ : Arr τ₁ τ₂ →
     Γ ⊢ e₂ : τ₁ →
     Γ ⊢ App e₁ e₂ : τ₂
@@ -109,10 +107,10 @@ Hint Constructors lookup typing : core.
 (* Semantic Typing *)
 
 Inductive blit_val : exp → Prop :=
-| BLitValBLit : ∀ b, blit_val b.
+| BLitValBLit b : blit_val b.
 
 Inductive abs_val : exp → Prop :=
-| AbsValAbs : ∀ τ e, abs_val (Abs τ e).
+| AbsValAbs τ e : abs_val (Abs τ e).
 
 #[export]
 Hint Constructors blit_val abs_val : core.
@@ -128,7 +126,7 @@ Equations val_rel e τ : Prop := {
 Reserved Notation "σ ∈ 𝒢⟦ Γ ⟧".
 Inductive ctx_rel : (var → exp) → ctx → Prop :=
 | CtxRelNil : ids ∈ 𝒢⟦∅⟧
-| CtxRelCons : ∀ Γ σ τ v,
+| CtxRelCons Γ σ τ v :
     σ ∈ 𝒢⟦Γ⟧ →
     v ∈ 𝒱⟦τ⟧ →
     (v .: σ) ∈ 𝒢⟦τ :: Γ⟧
@@ -185,7 +183,7 @@ Proof.
   specialize Hsem_typing with (v .: σ).
   have [v0 [Hstep_v0 Hvrel_v0]] : e.[v .: σ] ∈ ℰ⟦τ₂⟧ by auto.
   exists v0.
-  split => //.
+  split=> //.
   apply rtc_l with (y := e.[up σ].[v/]).
   - by eauto using StepBeta, val_rel_val.
   - by asimpl.
@@ -202,7 +200,7 @@ Proof.
   destruct Hvrel_v1 as [Haval_v1 Happ_v1].
   specialize (Happ_v1 v2 Hvrel_v2) as [v [Hmstep_v Hvrel_v]].
   exists v.
-  split => //.
+  split=> //.
   inversion Haval_v1; subst.
   apply rtc_trans with (y := App (Abs τ e) v2) => //.
   apply rtc_trans with (y := App (Abs τ e) e₂.[σ]); simpl.
