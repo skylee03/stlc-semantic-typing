@@ -180,7 +180,7 @@ Proof.
   exists ((Abs τ₁ e).[σ]).
   repeat split=> //.
   move=> v Hvrel.
-  specialize Hsem_typing with (v .: σ).
+  move: Hsem_typing => /(_ (v .: σ)) Hsem_typing.
   have [v0 [Hstep_v0 Hvrel_v0]] : e.[v .: σ] ∈ ℰ⟦τ₂⟧ by auto.
   exists v0.
   split=> //.
@@ -194,11 +194,10 @@ Lemma fundamental_property_app Γ τ₁ τ₂ e₁ e₂ :
   Γ ⊨ e₂ : τ₁ →
   Γ ⊨ App e₁ e₂ : τ₂.
 Proof.
-  rewrite/sem_typing/exp_rel=> Hsem_typing_e₁ Hsem_typing_e₂ σ Hcrel.
-  specialize (Hsem_typing_e₁ σ Hcrel) as [v1 [Hmsubst_v1 Hvrel_v1]].
-  specialize (Hsem_typing_e₂ σ Hcrel) as [v2 [Hmsubst_v2 Hvrel_v2]].
-  destruct Hvrel_v1 as [Haval_v1 Happ_v1].
-  specialize (Happ_v1 v2 Hvrel_v2) as [v [Hmstep_v Hvrel_v]].
+  rewrite/sem_typing/exp_rel=> + + σ Hcrel.
+  move=> /(_ σ Hcrel) [v1 [Hmsubst_v1 [Haval_v1 Happ_v1]]].
+  move=> /(_ σ Hcrel) [v2 [Hmsubst_v2 Hvrel_v2]].
+  move: Happ_v1 => /(_ v2 Hvrel_v2) [v [Hmstep_v Hvrel_v]].
   exists v.
   split=> //.
   inversion Haval_v1; subst.
