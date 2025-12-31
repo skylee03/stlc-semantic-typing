@@ -214,8 +214,8 @@ Theorem fundamental_property Γ e τ :
 Proof.
   move=> H.
   induction H.
-  - by apply: fundamental_property_var.
-  - by apply: fundamental_property_blit.
-  - by apply: fundamental_property_abs.
+  - exact: fundamental_property_var.
+  - exact: fundamental_property_blit.
+  - exact: fundamental_property_abs.
   - by apply: fundamental_property_app; eauto.
 Qed.
