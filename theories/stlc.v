@@ -3,6 +3,11 @@ From Autosubst Require Import Autosubst.
 From Equations Require Import Equations.
 From stdpp Require Import relations (rtc(..), rtc_trans).
 From Hammer Require Import Tactics.
+From Corelib Require Import ssreflect.
+
+Set Implicit Arguments.
+Unset Strict Implicit.
+Unset Printing Implicit Defensive.
 
 (* STLC *)
 
@@ -36,6 +41,7 @@ Definition ctx := list typ.
 Notation "∅" := nil.
 
 Implicit Types
+  (τ : typ)
   (e v : exp)
   (x : var)
   (b : bool)
@@ -112,7 +118,7 @@ Inductive abs_val : exp → Prop :=
 Hint Constructors blit_val abs_val : core.
 
 Reserved Notation "e ∈ 𝒱⟦ τ ⟧".
-Equations val_rel e (τ : typ) : Prop := {
+Equations val_rel e τ : Prop := {
 | e, Bool := blit_val e;
 | e, (Arr τ₁ τ₂) := abs_val e ∧ ∀ v,
     v ∈ 𝒱⟦τ₁⟧ →
@@ -144,95 +150,74 @@ Notation "Γ ⊨ e : τ" := (sem_typing Γ e τ) (at level 65, e at next level).
 
 (* Fundamental Property *)
 
-Lemma ctx_rel_lookup_msubst_val_rel : ∀ Γ σ x τ,
-  σ ∈ 𝒢⟦Γ⟧ →
-  Γ ∋ x : τ →
-  (σ x) ∈ 𝒱⟦τ⟧.
-Proof.
-  intros.
-  generalize dependent x.
-  generalize dependent τ.
-  induction H; sauto lq: on.
-Qed.
-
-Lemma fundamental_property_var : ∀ Γ x τ,
+Lemma fundamental_property_var Γ x τ :
   Γ ∋ x : τ →
   Γ ⊨ x : τ.
-Proof with eauto.
-  unfold sem_typing.
-  intros.
+Proof.
+  rewrite/sem_typing=> Hlookup σ Hcrel.
   exists (σ x).
-  split...
-  eapply ctx_rel_lookup_msubst_val_rel...
+  split=> //.
+  move: x τ Hlookup.
+  by elim: Hcrel; sauto lq: on.
 Qed.
 
-Lemma fundamental_property_blit : ∀ Γ b,
+Lemma fundamental_property_blit Γ b :
   Γ ⊨ b : Bool.
 Proof.
-  hauto l: on.
+  by hauto l: on.
 Qed.
 
-Lemma val_rel_val : ∀ τ v,
+Lemma val_rel_val τ v :
   v ∈ 𝒱⟦τ⟧ →
   val v.
 Proof.
-  induction τ; sauto q: on.
+  by elim: τ; sauto q: on.
 Qed.
 
-Lemma fundamental_property_abs : ∀ Γ τ₁ e τ₂,
+Lemma fundamental_property_abs Γ τ₁ e τ₂ :
   τ₁ :: Γ ⊨ e : τ₂ →
   Γ ⊨ Abs τ₁ e : Arr τ₁ τ₂.
-Proof with eauto.
-  unfold sem_typing.
-  intros.
+Proof.
+  rewrite/sem_typing=> Hsem_typing σ Hcrel.
   exists ((Abs τ₁ e).[σ]).
-  repeat split...
-  intros.
-  specialize H with (v .: σ).
-  enough (e.[v .: σ] ∈ ℰ⟦τ₂⟧)...
-  unfold exp_rel in H2.
-  destruct H2 as [v0 [Hstep_v0 Hvrel_v0]].
+  repeat split=> //.
+  move=> v Hvrel.
+  specialize Hsem_typing with (v .: σ).
+  have [v0 [Hstep_v0 Hvrel_v0]] : e.[v .: σ] ∈ ℰ⟦τ₂⟧ by auto.
   exists v0.
-  split...
+  split => //.
   apply rtc_l with (y := e.[up σ].[v/]).
-  - apply StepBeta.
-    eapply val_rel_val...
-  - asimpl...
+  - by eauto using StepBeta, val_rel_val.
+  - by asimpl.
 Qed.
 
-Lemma fundamental_property_app : ∀ Γ τ₁ τ₂ e₁ e₂,
+Lemma fundamental_property_app Γ τ₁ τ₂ e₁ e₂ :
   Γ ⊨ e₁ : Arr τ₁ τ₂ →
   Γ ⊨ e₂ : τ₁ →
   Γ ⊨ App e₁ e₂ : τ₂.
-Proof with eauto.
-  unfold sem_typing.
-  unfold exp_rel.
-  intros.
-  specialize (H σ H1).
-  specialize (H0 σ H1).
-  destruct H as [v1 [Hmsubst_v1 Hvrel_v1]].
-  destruct H0 as [v2 [Hmsubst_v2 Hvrel_v2]].
+Proof.
+  rewrite/sem_typing/exp_rel=> Hsem_typing_e₁ Hsem_typing_e₂ σ Hcrel.
+  specialize (Hsem_typing_e₁ σ Hcrel) as [v1 [Hmsubst_v1 Hvrel_v1]].
+  specialize (Hsem_typing_e₂ σ Hcrel) as [v2 [Hmsubst_v2 Hvrel_v2]].
   destruct Hvrel_v1 as [Haval_v1 Happ_v1].
-  specialize (Happ_v1 v2 Hvrel_v2).
-  destruct Happ_v1 as [v [Hmstep_v Hvrel_v]].
+  specialize (Happ_v1 v2 Hvrel_v2) as [v [Hmstep_v Hvrel_v]].
   exists v.
-  split...
+  split => //.
   inversion Haval_v1; subst.
-  simpl.
-  apply rtc_trans with (y := App (Abs τ e) v2)...
-  apply rtc_trans with (y := App (Abs τ e) e₂.[σ])...
-  - induction Hmsubst_v1...
-  - induction Hmsubst_v2...
+  apply rtc_trans with (y := App (Abs τ e) v2) => //.
+  apply rtc_trans with (y := App (Abs τ e) e₂.[σ]); simpl.
+  - by elim: Hmsubst_v1; eauto.
+  - by elim: Hmsubst_v2; eauto.
 Qed.
 
-Theorem fundamental_property : ∀ Γ e τ,
+Theorem fundamental_property Γ e τ :
   Γ ⊢ e : τ →
   Γ ⊨ e : τ.
-Proof with eauto.
-  intros.
+Proof.
+  move=> H.
   induction H.
-  - apply fundamental_property_var...
-  - apply fundamental_property_blit.
-  - apply fundamental_property_abs...
-  - eapply fundamental_property_app...
+  - by apply: fundamental_property_var.
+  - by apply: fundamental_property_blit.
+  - by apply: fundamental_property_abs.
+  - by apply: fundamental_property_app; eauto.
 Qed.
