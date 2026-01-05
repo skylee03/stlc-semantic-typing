@@ -20,7 +20,7 @@ Inductive typ :=
 | Arr (τ₁ τ₂ : typ).
 
 Implicit Types
-  (τ :typ).
+  (τ : typ).
 
 Inductive exp :=
 | Var x
