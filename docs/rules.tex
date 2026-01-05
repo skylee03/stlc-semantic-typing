@@ -7,10 +7,10 @@
     \begin{center}
       \begin{tabular}{llll}
         Types & $\tau$ & $\Coloneq$ & $\mathrm{bool} \mid \tau \to \tau$\\
-        Expressions & $e$ & $\Coloneq$ & $x \mid \bar{b} \mid \lambda x : \tau.~e \mid e~e$ \\
-      Values & $v$ & $\Coloneq$ & $\bar{b} \mid \lambda x : \tau.~e$ \\
-        Contexts & $\Gamma$ & $\Coloneq$ & $\bullet \mid \Gamma, x : \tau$ \\
-        Substitutions & $\sigma$ & $\Coloneq$ & $\emptyset \mid \sigma[x \mapsto v]$
+        Expressions & $e$ & $\Coloneq$ & $x \mid \bar{b} \mid \lambda x : \tau\ldotp e \mid e~e$ \\
+      Values & $v$ & $\Coloneq$ & $\bar{b} \mid \lambda x : \tau\ldotp e$ \\
+        Contexts & $\Gamma$ & $\Coloneq$ & $\emptyset \mid \Gamma, x : \tau$ \\
+        Substitutions & $\sigma$ & $\Coloneq$ & $\mathrm{id} \mid \sigma[x \mapsto v]$
       \end{tabular}
     \end{center}
     \caption{Syntax}
@@ -20,7 +20,7 @@
     \begin{mathpar}
       \infer[\textsc{Typ-Var}]{x : \tau \in \Gamma}{\Gamma \vdash x : \tau} \and
       \infer[\textsc{Typ-BLit}]{ }{\Gamma \vdash \bar{b} : \mathrm{bool}} \and
-      \infer[\textsc{Typ-Abs}]{\Gamma, x : \tau_1 \vdash e : \tau_2}{\Gamma \vdash \lambda x : \tau_1.~e : \tau_1 \to \tau_2} \and
+      \infer[\textsc{Typ-Abs}]{\Gamma, x : \tau_1 \vdash e : \tau_2}{\Gamma \vdash \lambda x : \tau_1\ldotp e : \tau_1 \to \tau_2} \and
       \infer[\textsc{Typ-App}]{\Gamma \vdash e_1 : \tau_1 \to \tau_2 \and \Gamma \vdash e_2 : \tau_1}{\Gamma \vdash e_1~e_2 : \tau_2} \and
     \end{mathpar}
     \caption{Syntactic Typing}
@@ -28,7 +28,7 @@
 
   \begin{figure}[t]
     \begin{mathpar}
-      \infer[\textsc{Red-Beta}]{ }{(\lambda x : \tau.~e)~v \hookrightarrow e[v / x]} \and
+      \infer[\textsc{Red-Beta}]{ }{(\lambda x : \tau\ldotp e)~v \hookrightarrow e[v / x]} \and
       \infer[\textsc{Red-App\textsubscript{1}}]{e_1 \hookrightarrow e_1'}{e_1~e_2 \hookrightarrow e_1'~e_2} \and
       \infer[\textsc{Red-App\textsubscript{2}}]{e_2 \hookrightarrow e_2'}{v~e_2 \hookrightarrow v~e_2'} \and
     \end{mathpar}
@@ -37,7 +37,7 @@
 
   \begin{figure}[t]
     \begin{align*}
-      \emptyset(e) &\coloneq e \\
+      \mathrm{id}(e) &\coloneq e \\
       \sigma[x \mapsto v](e) &\coloneq \sigma(e[v/x])
     \end{align*}
     \caption{Substitution}
@@ -46,9 +46,9 @@
   \begin{figure}[t]
     \begin{align*}
       \mathcal{V}\lBrack\mathrm{bool}\rBrack &\coloneq \{\bar{b} \mid b \in \mathbb{B}\} \\
-      \mathcal{V}\lBrack\tau_1 \to \tau_2\rBrack &\coloneq \{\lambda x : \tau_1.~e \mid \forall v \in \mathcal{V}\lBrack\tau_1\rBrack.~e[v / x] \in \mathcal{E}\lBrack\tau_2\rBrack\} \\
-      \mathcal{E}\lBrack\tau\rBrack &\coloneq \{e \mid \exists v.~ e \hookrightarrow^* v \land v \in \mathcal{V}\lBrack\tau\rBrack\} \\
-      \mathcal{G}\lBrack\bullet\rBrack &\coloneq \{\emptyset\} \\
+      \mathcal{V}\lBrack\tau_1 \to \tau_2\rBrack &\coloneq \{\lambda x : \tau_1\ldotp e \mid \forall v \in \mathcal{V}\lBrack\tau_1\rBrack\ldotp e[v / x] \in \mathcal{E}\lBrack\tau_2\rBrack\} \\
+      \mathcal{E}\lBrack\tau\rBrack &\coloneq \{e \mid \exists v\ldotp e \hookrightarrow^* v \land v \in \mathcal{V}\lBrack\tau\rBrack\} \\
+      \mathcal{G}\lBrack\emptyset\rBrack &\coloneq \{\mathrm{id}\} \\
       \mathcal{G}\lBrack\Gamma, x : \tau\rBrack &\coloneq \{\sigma[x \mapsto v] \mid \sigma \in \mathcal{G}\lBrack\Gamma\rBrack \land v \in \mathcal{V}\lBrack\tau\rBrack\} \\
     \end{align*}
     \caption{Logical Relation}
@@ -56,7 +56,7 @@
 
   \begin{figure}[t]
     \[
-      \Gamma \vDash e : \tau \coloneq \forall \sigma \in \mathcal{G}\lBrack\Gamma\rBrack.~\sigma(e) \in \mathcal{E}\lBrack\tau\rBrack
+      \Gamma \vDash e : \tau \coloneq \forall \sigma \in \mathcal{G}\lBrack\Gamma\rBrack\ldotp\sigma(e) \in \mathcal{E}\lBrack\tau\rBrack
     \]
     \caption{Semantic Typing}
   \end{figure}
