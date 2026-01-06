@@ -6,9 +6,9 @@
   \begin{figure}[t]
     \begin{center}
       \begin{tabular}{llll}
-        Types & $\tau$ & $\Coloneq$ & $\mathrm{bool} \mid \tau \to \tau$\\
-        Expressions & $e$ & $\Coloneq$ & $x \mid \bar{b} \mid \lambda x : \tau\ldotp e \mid e\,e$ \\
-      Values & $v$ & $\Coloneq$ & $\bar{b} \mid \lambda x : \tau\ldotp e$ \\
+        Types & $\tau$ & $\Coloneq$ & $\mathsf{Bool} \mid \tau \to \tau$\\
+        Expressions & $e$ & $\Coloneq$ & $x \mid \mathrm{true} \mid \mathrm{false} \mid \lambda x : \tau\ldotp e \mid e\,e$ \\
+      Values & $v$ & $\Coloneq$ & $\mathrm{true} \mid \mathrm{false} \mid \lambda x : \tau\ldotp e$ \\
         Contexts & $\Gamma$ & $\Coloneq$ & $\varnothing \mid \Gamma, x : \tau$ \\
         Substitutions & $\sigma$ & $\Coloneq$ & $\mathrm{id} \mid \sigma[x \mapsto v]$
       \end{tabular}
@@ -19,7 +19,8 @@
   \begin{figure}[t]
     \begin{mathpar}
       \infer[\textsc{Typ-Var}]{x : \tau \in \Gamma}{\Gamma \vdash x : \tau} \and
-      \infer[\textsc{Typ-BLit}]{ }{\Gamma \vdash \bar{b} : \mathrm{bool}} \and
+      \infer[\textsc{Typ-True}]{ }{\Gamma \vdash \mathrm{true} : \mathsf{Bool}} \and
+      \infer[\textsc{Typ-False}]{ }{\Gamma \vdash \mathrm{false} : \mathsf{Bool}} \and
       \infer[\textsc{Typ-Abs}]{\Gamma, x : \tau_1 \vdash e : \tau_2}{\Gamma \vdash \lambda x : \tau_1\ldotp e : \tau_1 \to \tau_2} \and
       \infer[\textsc{Typ-App}]{\Gamma \vdash e_1 : \tau_1 \to \tau_2 \and \Gamma \vdash e_2 : \tau_1}{\Gamma \vdash e_1\,e_2 : \tau_2} \and
     \end{mathpar}
@@ -45,7 +46,7 @@
 
   \begin{figure}[t]
     \begin{align*}
-      \mathcal{V}\lBrack\mathrm{bool}\rBrack &\coloneq \{\bar{b} \mid b \in \mathbb{B}\} \\
+      \mathcal{V}\lBrack\mathsf{Bool}\rBrack &\coloneq \{\mathrm{true}, \mathrm{false}\} \\
       \mathcal{V}\lBrack\tau_1 \to \tau_2\rBrack &\coloneq \{\lambda x : \tau_1\ldotp e \mid \forall v \in \mathcal{V}\lBrack\tau_1\rBrack\ldotp e[v / x] \in \mathcal{E}\lBrack\tau_2\rBrack\} \\
       \mathcal{E}\lBrack\tau\rBrack &\coloneq \{e \mid \exists v \in \mathcal{V}\lBrack\tau\rBrack\ldotp e \hookrightarrow^* v\} \\
       \mathcal{G}\lBrack\varnothing\rBrack &\coloneq \{\mathrm{id}\} \\
