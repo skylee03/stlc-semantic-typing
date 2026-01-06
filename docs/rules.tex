@@ -3,7 +3,10 @@
 \usepackage{mathpartir}
 
 \begin{document}
-  \begin{figure}[t]
+
+  \section{Syntax}
+
+  \begin{figure}[ht]
     \begin{center}
       \begin{tabular}{llll}
         Variables & $x$\\
@@ -17,7 +20,7 @@
     \caption{Syntax}
   \end{figure}
 
-  \begin{figure}[t]
+  \begin{figure}[ht]
     \begin{mathpar}
       \infer[\textsc{Typ-Var}]{x : \tau \in \Gamma}{\Gamma \vdash x : \tau} \and
       \infer[\textsc{Typ-True}]{ }{\Gamma \vdash \mathrm{true} : \mathsf{Bool}} \and
@@ -28,7 +31,9 @@
     \caption{Syntactic Typing}
   \end{figure}
 
-  \begin{figure}[t]
+  \section{Semantics}
+
+  \begin{figure}[ht]
     \begin{mathpar}
       \infer[\textsc{Step-Beta}]{ }{(\lambda x : \tau\ldotp e)\,v \hookrightarrow e[v / x]} \and
       \infer[\textsc{Step-App\textsubscript{1}}]{e_1 \hookrightarrow e_1'}{e_1\,e_2 \hookrightarrow e_1'\,e_2} \and
@@ -37,7 +42,7 @@
     \caption{Reduction}
   \end{figure}
 
-  \begin{figure}[t]
+  \begin{figure}[ht]
     \begin{align*}
       \mathrm{id}(e) &\coloneq e \\
       \sigma[x \mapsto v](e) &\coloneq \sigma(e[v/x])
@@ -45,7 +50,7 @@
     \caption{Substitution}
   \end{figure}
 
-  \begin{figure}[t]
+  \begin{figure}[ht]
     \begin{align*}
       \mathcal{V}\lBrack\mathsf{Bool}\rBrack &\coloneq \{\mathrm{true}, \mathrm{false}\} \\
       \mathcal{V}\lBrack\tau_1 \to \tau_2\rBrack &\coloneq \{\lambda x : \tau_1\ldotp e \mid \forall v \in \mathcal{V}\lBrack\tau_1\rBrack\ldotp e[v / x] \in \mathcal{E}\lBrack\tau_2\rBrack\} \\
@@ -56,7 +61,7 @@
     \caption{Logical Relation}
   \end{figure}
 
-  \begin{figure}[t]
+  \begin{figure}[ht]
     \[
       \Gamma \vDash e : \tau \coloneq \forall \sigma \in \mathcal{G}\lBrack\Gamma\rBrack\ldotp\sigma(e) \in \mathcal{E}\lBrack\tau\rBrack
     \]
