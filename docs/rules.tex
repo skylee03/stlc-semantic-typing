@@ -12,9 +12,7 @@
         Variables & $x$\\
         Types & $\tau$ & $\Coloneq$ & $\mathsf{Bool} \mid \tau \to \tau$\\
         Expressions & $e$ & $\Coloneq$ & $x \mid \mathrm{true} \mid \mathrm{false} \mid \lambda x : \tau\ldotp e \mid e\,e$ \\
-      Values & $v$ & $\Coloneq$ & $\mathrm{true} \mid \mathrm{false} \mid \lambda x : \tau\ldotp e$ \\
-        Contexts & $\Gamma$ & $\Coloneq$ & $\varnothing \mid \Gamma, x : \tau$ \\
-        Substitutions & $\sigma$ & $\Coloneq$ & $\mathrm{id} \mid \sigma[x \mapsto v]$
+        Contexts & $\Gamma$ & $\Coloneq$ & $\varnothing \mid \Gamma, x : \tau$
       \end{tabular}
     \end{center}
     \caption{Syntax}
@@ -32,6 +30,16 @@
   \end{figure}
 
   \section{Semantics}
+
+  \begin{figure}[ht]
+    \begin{center}
+      \begin{tabular}{llll}
+        Values & $v$ & $\Coloneq$ & $\mathrm{true} \mid \mathrm{false} \mid \lambda x : \tau\ldotp e$ \\
+        Substitutions & $\sigma$ & $\Coloneq$ & $\mathrm{id} \mid \sigma[x \mapsto v]$
+      \end{tabular}
+    \end{center}
+    \caption{Values and Substitutions}
+  \end{figure}
 
   \begin{figure}[ht]
     \begin{mathpar}
