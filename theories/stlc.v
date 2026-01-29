@@ -1,5 +1,4 @@
 From Stdlib Require Import List Utf8.
-From Autosubst Require Import Autosubst.
 From Equations Require Import Equations.
 From stdpp Require Import relations (rtc(..), rtc_trans).
 From Hammer Require Import Tactics.
@@ -11,33 +10,25 @@ Unset Printing Implicit Defensive.
 
 (* STLC *)
 
-Implicit Types
-  (x : var)
-  (b : bool).
+From STLCSemanticTyping.Syntax Require Import syntax core unscoped.
 
-Inductive typ :=
-| Bool
-| Arr (τ₁ τ₂ : typ).
-
-Implicit Types
-  (τ : typ).
-
-Inductive exp :=
-| Var x
-| BLit b
-| Abs τ (e : {bind exp})
-| App (e₁ e₂ : exp).
-
-Coercion Var : var >-> exp.
-Coercion BLit : bool >-> exp.
+Notation "s .: σ" := (scons s σ) (at level 55, σ at next level, right associativity).
+Notation "s .[ σ ]" := (subst_exp σ s) (at level 2, σ at level 200, left associativity, format "s .[ σ ]").
+Notation "s .[ t /]" := (subst_exp (t .: ids) s) (at level 2, t at level 200, left associativity, format "s .[ t /]").
 
 Definition ctx := list typ.
 Notation "∅" := nil.
 
+Coercion Vari : nat >-> exp.
+Coercion BLit : bool >-> exp.
+
 Implicit Types
+  (x : nat)
+  (b : bool)
+  (τ : typ)
   (e v : exp)
   (Γ : ctx)
-  (σ : var → exp).
+  (σ : nat → exp).
 
 Inductive val : exp → Prop :=
 | ValBool : ∀ b, val b
@@ -45,13 +36,6 @@ Inductive val : exp → Prop :=
 
 #[export]
 Hint Constructors typ exp val : core.
-
-(* Autosubst *)
-
-#[export] Instance Ids_exp : Ids exp. derive. Defined.
-#[export] Instance Rename_exp : Rename exp. derive. Defined.
-#[export] Instance Subst_exp : Subst exp. derive. Defined.
-#[export] Instance SubstLemmas_exp : SubstLemmas exp. derive. Qed.
 
 (* Operational Semantics *)
 
@@ -77,7 +61,7 @@ Hint Constructors step rtc : core.
 (* Syntactic Typing *)
 
 Reserved Notation "Γ ∋ x : τ" (at level 65, x at next level).
-Inductive lookup : ctx → var → typ → Prop :=
+Inductive lookup : ctx → nat → typ → Prop :=
 | LookupZero τ Γ :
     τ :: Γ ∋ 0 : τ
 | LookupSucc Γ τ₁ x τ₂ :
@@ -124,7 +108,7 @@ Equations val_rel e τ : Prop := {
 } where "e ∈ 𝒱⟦ τ ⟧" := (val_rel e τ).
 
 Reserved Notation "σ ∈ 𝒢⟦ Γ ⟧".
-Inductive ctx_rel : (var → exp) → ctx → Prop :=
+Inductive ctx_rel : (nat → exp) → ctx → Prop :=
 | CtxRelNil : ids ∈ 𝒢⟦∅⟧
 | CtxRelCons Γ σ τ v :
     σ ∈ 𝒢⟦Γ⟧ →
@@ -184,7 +168,7 @@ Proof.
   have [v0 [Hstep_v0 Hvrel_v0]] : e.[v .: σ] ∈ ℰ⟦τ₂⟧ by auto.
   exists v0.
   split=> //.
-  apply rtc_l with (y := e.[up σ].[v/]).
+  apply rtc_l with (y := e.[up_exp_exp σ].[v/]).
   - by eauto using StepBeta, val_rel_val.
   - by asimpl.
 Qed.
