@@ -26,7 +26,7 @@ jobs:
             STLCSemanticTyping
       - uses: coq-community/docker-coq-action@v1
         with:
-          coq_version: 9.1
+          coq_version: '9.0'
           ocaml_version: default
           custom_script: |
             sudo chown -R rocq:rocq .

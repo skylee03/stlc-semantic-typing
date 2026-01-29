@@ -1,0 +1,10 @@
+(coq.theory
+ (name STLCSemanticTyping.Syntax)
+ (package stlc-semantic-typing)
+ (theories Stdlib))
+
+(rule
+ (targets core.v syntax.v unscoped.v)
+ (deps syntax.sig)
+ (action
+  (run autosubst -o syntax.v -f %{deps})))
