@@ -35,7 +35,6 @@ jobs:
             rocq --version
             opam repo add rocq-core-dev https://rocq-prover.org/opam/core-dev
             opam repo add rocq-extra-dev https://rocq-prover.org/opam/extra-dev
-            opam repo add iris-dev https://gitlab.mpi-sws.org/iris/opam.git
             opam update
             opam install . --deps-only -y
             export DUNE_CACHE_ROOT=$(pwd)/dune-cache/
