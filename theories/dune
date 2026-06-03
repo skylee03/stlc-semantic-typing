@@ -1,4 +1,4 @@
-(coq.theory
+(rocq.theory
  (name STLCSemanticTyping)
  (package stlc-semantic-typing)
  (theories Stdlib stdpp Equations Hammer))
